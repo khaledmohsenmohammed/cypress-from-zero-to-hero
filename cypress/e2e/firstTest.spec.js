@@ -227,7 +227,7 @@ describe("my first test suite", () => {
     let date = new Date();
     cy.log(date.toISOString().split("T")[0]); // this will log the current date in the console
     date.setDate(date.getDate() + 60);
-    debugger;
+
     console.log(date);
     let futureDate = date.getDate();
     console.log(`**********futureDate********${futureDate}`);
