@@ -1,5 +1,7 @@
 /// <reference types="cypress" />
 
+const { wrap } = require("module");
+
 describe("my first test suite", () => {
   it("my first test case", () => {
     // test step
@@ -106,7 +108,7 @@ describe("my first test suite", () => {
         .should("contain", "Password");
     });
   });
-  it.only("save subject of the command (2)", () => {
+  it("save subject of the command (2)", () => {
     // test step
     //navigate to the url
     cy.visit("/"); // this will navigate to the base url in cypress.configration.js file
@@ -212,5 +214,189 @@ describe("my first test suite", () => {
     cy.get("[type='checkbox']").eq(0).check({ force: true }); //this will find all the elements have the attribute type=cheakebox and get elment number 0 and check it
     cy.get("[type='checkbox']").eq(2).check({ force: true }); //this will find all the elements have the attribute type=cheakebox and get elment number 2 and check it
     cy.get("[type='checkbox']").eq(0).click({ force: true }); // the click() method is used to click on the selected checkbox element. without take the checkbox value true or false
+  });
+
+  // Datepicker
+  it("date picker", () => {
+    // test step
+    //navigate to the url
+    cy.visit("/"); // this will navigate to the base url in cypress.configration.js file
+    cy.contains("Forms").click(); // this will click on the forms link
+    cy.contains("Datepicker").click(); // this will cliked in the datepicker link
+    //will be use javascript code to git the curnt date
+    let date = new Date();
+    cy.log(date.toISOString().split("T")[0]); // this will log the current date in the console
+    date.setDate(date.getDate() + 60);
+    debugger;
+    console.log(date);
+    let futureDate = date.getDate();
+    console.log(`**********futureDate********${futureDate}`);
+
+    let year = 2024;
+    let dateToAssert = `Apr ${futureDate}, ${year}`;
+    console.log(`********dateToAssert**********${dateToAssert}`);
+    //need to select the (common date picker)
+    cy.contains("nb-card", "Common Datepicker")
+      .find("input")
+      .then((inputDate) => {
+        cy.wrap(inputDate).click(); // this will click on the datepicker input field
+        cy.get(".day-cell").not(".bounding-month").contains(futureDate).click(); // this will click on the first day in the datepicker
+        cy.wrap(inputDate)
+          .invoke("prop", "value")
+          .should("contain", dateToAssert); // this will get the value of the datepicker input field
+      });
+  });
+  // Datepicker by the futchure month and year
+  it("date picker by thefutchure month and year", () => {
+    // test step
+    //navigate to the url
+    cy.visit("/"); // this will navigate to the base url in cypress.configration.js file
+    cy.contains("Forms").click(); // this will click on the forms link
+    cy.contains("Datepicker").click(); // this will cliked in the datepicker link
+    //will be use javascript code to git the curnt date
+    let date = new Date();
+    date.setDate(date.getDate() + 600);
+    console.log(`**********Date********${date}`);
+    let futureDay = date.getDate();
+    console.log(`**********futureDay********${futureDay}`);
+    let futureMonth = date.toLocaleDateString("en-US", { month: "short" });
+    console.log(`**********futureMonth********${futureMonth}`);
+    let futchureYear = date.getFullYear();
+    console.log(`**********futchureYear********${futchureYear}`);
+    let dateToAssert = `${futureMonth} ${futureDay}, ${futchureYear}`;
+    console.log(`********dateToAssert**********${dateToAssert}`);
+
+    //need to select the (common date picker)
+    cy.contains("nb-card", "Common Datepicker")
+      .find("input")
+      .then((inputDate) => {
+        cy.wrap(inputDate).click(); // this will click on the datepicker input field
+        // create reccursion function to check the month and year
+        function selectDayFromCurrent() {
+          //the logic
+          cy.get("nb-calendar-navigation")
+            .invoke("attr", "ng-reflect-date")
+            .then((dateAttribute) => {
+              console.log(`********dateAttribute**********${dateAttribute}`);
+              let log = dateAttribute.includes(futureMonth);
+              let log2 = !dateAttribute.includes(futchureYear);
+
+              if (
+                !dateAttribute.includes(futureMonth) ||
+                !dateAttribute.includes(futchureYear)
+              ) {
+                cy.get("[data-name='chevron-right']").click();
+                selectDayFromCurrent();
+              } else {
+                cy.get(".day-cell")
+                  .not(".bounding-month")
+                  .contains(futureDay)
+                  .click();
+              }
+            });
+        }
+        //call the reccursion function
+        selectDayFromCurrent();
+        cy.wrap(inputDate)
+          .invoke("prop", "value")
+          .should("contain", dateToAssert); // this will get the value of the datepicker input field
+      });
+  });
+  //list and dropdones
+  it("list & dropdowns", () => {
+    cy.visit("/"); // this will navigate to the base url in cypress.configration.js file
+    //1
+    /*
+    cy.get("nav nb-select").click(); // this will click on the dropdown list
+    cy.get(".options-list").contains("Dark").click(); // this will click on the dark option in the dropdown list
+    cy.get("nav nb-select").should("contain", "Dark"); // this will check the dropdown list value
+    */
+    //2
+    cy.get("nav nb-select").then((dropdown) => {
+      console.log(dropdown.text());
+      cy.wrap(dropdown).click(); // this will click on the dropdown list
+      cy.get(".options-list nb-option").each((listItem) => {
+        const itemText = listItem.text().trim();
+        console.log(itemText);
+        cy.wrap(listItem).click();
+        cy.wrap(dropdown).should("contain", itemText);
+        cy.wrap(dropdown).click();
+      });
+    });
+  });
+  //webTables
+  it("webTables", () => {
+    // test step
+    cy.visit("/");
+    cy.contains("Tables & Data").click();
+    cy.contains("Smart Table").click();
+    //get the row by text have the larry
+    cy.get("tbody")
+      .contains("tr", "Larry")
+      .then((tableRow) => {
+        console.log(`********************** ${tableRow}`);
+        cy.wrap(tableRow).find(".nb-edit").click();
+        cy.wrap(tableRow).find("[placeholder='Age']").clear().type("30");
+        cy.wrap(tableRow).find(".nb-checkmark").click();
+        cy.wrap(tableRow).find("td").eq(6).should("contain", "30");
+      });
+    //get the row by index
+    cy.get("thead").find(".nb-plus").click();
+    cy.get("thead")
+      .find("tr")
+      .eq(2)
+      .then((tableRow) => {
+        cy.wrap(tableRow)
+          .find('[placeholder="First Name"]')
+          .clear()
+          .type("khaled");
+        cy.wrap(tableRow)
+          .find('[placeholder="Last Name"]')
+          .clear()
+          .type("mohsen");
+        cy.wrap(tableRow).find('[placeholder="Age"]').clear().type("20");
+        cy.wrap(tableRow).find(".nb-checkmark").click();
+      });
+    //assert the row by text
+    cy.get("tbody tr")
+      .first()
+      .find("td")
+      .then((tableColumns) => {
+        cy.wrap(tableColumns).eq(2).should("contain", "khaled");
+      });
+    //30. PopUps and ToolTips
+  });
+  // PopUps and ToolTips
+  it("PopUps and ToolTips", () => {
+    // test step
+    cy.visit("/");
+    cy.contains("Modal & Overlays").click();
+    cy.contains("Tooltip").click();
+    cy.contains("nb-card", "Colored Tooltips").contains("Default").click();
+    cy.get("nb-tooltip").should("contain", "This is a tooltip");
+  });
+  //the dialg Box
+  it.only("dialog box ", () => {
+    // test step
+    cy.visit("/");
+    cy.contains("Tables & Data").click();
+    cy.contains("Smart Table").click();
+    //get the row by text have the larry
+    //cy.get("tbody tr").first().find(".nb-trash").click();
+    //cy.on("window:confirm", (confirm) => {
+    // expect(confirm).to.equal("Are you sure you want to delete?");
+
+    //2
+    const stub = cy.stub();
+    cy.on("window:confirm", stub);
+    cy.get("tbody tr")
+      .first()
+      .find(".nb-trash")
+      .click()
+      .then(() => {
+        expect(stub.getCall(0)).to.be.calledWith(
+          "Are you sure you want to delete?"
+        );
+      });
   });
 });

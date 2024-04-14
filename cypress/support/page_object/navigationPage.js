@@ -16,23 +16,32 @@ function selectGropManuItems(gropeName) {
       });
   });
 }
-
+//class to navigate to the different pages
 export class NavigatioPage {
   formLayoutsPage() {
     selectGropManuItems("Forms");
     cy.contains("Form Layouts").click(); // this will click on the form layouts link
   }
-  // this is the method to navigate to the date picker page
-  formDatePickerPage() {
+
+  DatePickerPage() {
     selectGropManuItems("Forms");
     cy.contains("Datepicker").click(); // this will click on the Datepicker link
   }
 
-  // this is the method to navigate to the form modal and overlays page
-  formModalAbdOverlayspage() {
+  toasterPage() {
     selectGropManuItems("Modal & Overlays");
     cy.contains("Toastr").click(); // this will click on the Modal & Overlays link
   }
-}
 
+  smartTablePage() {
+    selectGropManuItems("Tables & Data");
+    cy.contains("Smart Table").click(); // this will click on the Smart Table link
+  }
+
+  tooltipPage() {
+    selectGropManuItems("Modal & Overlays");
+    cy.contains("Tooltip").click(); // this will click on the Modal & Overlays link
+  }
+}
+//this is the object of the class
 export const onNavigationPage = new NavigatioPage();

@@ -6,9 +6,12 @@ describe("Test with Page Objects", () => {
   beforeEach(() => {
     cy.visit("/");
   });
+
   it("verifay navigation cross the pages", () => {
     onNavigationPage.formLayoutsPage();
-    onNavigationPage.formDatePickerPage();
-    onNavigationPage.formModalAbdOverlayspage();
+    onNavigationPage.DatePickerPage();
+    onNavigationPage.toasterPage();
+    onNavigationPage.smartTablePage();
+    onNavigationPage.tooltipPage();
   });
 });
